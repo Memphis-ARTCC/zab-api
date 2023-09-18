@@ -7,7 +7,7 @@ import './Role.js';
 import './Absence.js';
 import './TrainingMilestone.js';
 
-import zab from '../config/zab.js';
+import zme from '../config/zme.js';
 
 const userSchema = new m.Schema({
 	cid: Number,
@@ -75,11 +75,11 @@ userSchema.virtual('isIns').get(function() {
 });
 
 userSchema.virtual('ratingShort').get(function() {
-	return zab.ratings[this.rating];
+	return zme.ratings[this.rating];
 });
 
 userSchema.virtual('ratingLong').get(function() {
-	return zab.ratingsLong[this.rating];
+	return zme.ratingsLong[this.rating];
 });
 
 userSchema.virtual('roles', {

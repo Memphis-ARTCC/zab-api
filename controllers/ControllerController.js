@@ -78,7 +78,7 @@ router.get('/', async ({res}) => {
 		res.stdRes.data = {home, visiting};
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -157,7 +157,7 @@ router.get('/staff', async (req, res) => {
 		res.stdRes.data = staff;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -170,7 +170,7 @@ router.get('/role', async (req, res) => {
 		res.stdRes.data = roles;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -191,7 +191,7 @@ router.get('/oi', async (req, res) => {
 		res.stdRes.data = oi.map(oi => oi.oi);
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -203,7 +203,7 @@ router.get('/visit', getUser, auth(['atm', 'datm']), async ({res}) => {
 		const applications = await VisitApplication.find({deletedAt: null, acceptedAt: null}).lean();
 		res.stdRes.data = applications;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -225,7 +225,7 @@ router.get('/absence', getUser, auth(['atm', 'datm']), async(req, res) => {
 
 		res.stdRes.data = absences;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -269,7 +269,7 @@ router.post('/absence', getUser, auth(['atm', 'datm']), async(req, res) => {
 		});
 
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -294,7 +294,7 @@ router.delete('/absence/:id', getUser, auth(['atm', 'datm']), async(req, res) =>
 			action: `%b deleted the leave of absence for %a.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -323,10 +323,9 @@ router.get('/log', getUser, auth(['atm', 'datm', 'ta', 'fe', 'ec', 'wm']), async
 		};
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 })
 
@@ -361,10 +360,9 @@ router.get('/:cid', getUser, async (req, res) => {
 		res.stdRes.data = user;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -378,7 +376,7 @@ router.get('/stats/:cid', async (req, res) => {
 				twr: 0,
 				app: 0,
 				ctr: 0
-			}, 
+			},
 			total: {
 				del: 0,
 				gnd: 0,
@@ -399,9 +397,7 @@ router.get('/stats/:cid', async (req, res) => {
 			ctr: 'ctr'
 		}
 		const today = L.utc();
-	
 		const getMonthYearString = date => date.toFormat('LLL yyyy');
-	
 		for(let i = 0; i < 13; i++) {
 			const theMonth = today.minus({months: i});
 			const ms = getMonthYearString(theMonth)
@@ -414,7 +410,6 @@ router.get('/stats/:cid', async (req, res) => {
 			};
 			hours.months.push(ms);
 		}
-	
 		for(const sess of controllerHours) {
 			const thePos = sess.position.toLowerCase().match(/([a-z]{3})$/); // 🤮
 
@@ -424,15 +419,12 @@ router.get('/stats/:cid', async (req, res) => {
 				const type = pos[thePos[1]];
 				const length = end.toFormat('X') - start.toFormat('X');
 				let ms = getMonthYearString(start);
-	
 				if(!hours[ms]) {
 					ms = 'gtyear';
 				}
-	
 				hours[ms][type] += length;
 				hours.total[type] += length;
 			}
-	
 		}
 
 		hours.sessionAvg = Math.round(Object.values(hours.total).reduce((acc, cv) => acc + cv)/hours.sessionCount);
@@ -440,7 +432,7 @@ router.get('/stats/:cid', async (req, res) => {
 	}
 
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -467,38 +459,40 @@ router.post('/visit', getUser, async (req, res) => {
 		}
 
 		await VisitApplication.create(userData);
-		
-		await transporter.sendMail({
-			to: req.body.email,
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `Visiting Application Received | Albuquerque ARTCC`,
-			template: 'visitReceived',
-			context: {
-				name: `${res.user.fname} ${res.user.lname}`,
-			}
-		});
-		await transporter.sendMail({
-			to: 'atm@zabartcc.org, datm@zabartcc.org',
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `New Visiting Application: ${res.user.fname} ${res.user.lname} | Albuquerque ARTCC`,
-			template: 'staffNewVisit',
-			context: {
-				user: userData
-			}
-		});
+		if (process.env.EMAIL_ENABLED == "true") {
+			await transporter.sendMail({
+				to: req.body.email,
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `Visiting Application Received | Memphis ARTCC`,
+				template: 'visitReceived',
+				context: {
+					name: `${res.user.fname} ${res.user.lname}`,
+				}
+			});
+			await transporter.sendMail({
+				to: 'atm@memphisartcc.com, datm@memphisartcc.com',
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `New Visiting Application: ${res.user.fname} ${res.user.lname} | Memphis ARTCC`,
+				template: 'staffNewVisit',
+				context: {
+					user: userData
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
-	
-	return res.json(res.stdRes);	
+	return res.json(res.stdRes);
 });
 
 router.get('/visit/status', getUser, async (req, res) => {
@@ -512,7 +506,6 @@ router.get('/visit/status', getUser, async (req, res) => {
 		const count = await VisitApplication.countDocuments({cid: res.user.cid, deleted: false});
 		res.stdRes.data = count;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
@@ -533,32 +526,35 @@ router.put('/visit/:cid', getUser, auth(['atm', 'datm']), async (req, res) => {
 
 		await user.save();
 
-		await transporter.sendMail({
-			to: user.email,
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `Visiting Application Accepted | Albuquerque ARTCC`,
-			template: 'visitAccepted',
-			context: {
-				name: `${user.fname} ${user.lname}`,
-			}
-		});
-
-		await axios.post(`https://api.vatusa.net/v2/facility/ZAB/roster/manageVisitor/${req.params.cid}?apikey=${process.env.VATUSA_API_KEY}`)
+		if (process.env.EMAIL_ENABLED == "true") {
+			await transporter.sendMail({
+				to: user.email,
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `Visiting Application Accepted | Memphis ARTCC`,
+				template: 'visitAccepted',
+				context: {
+					name: `${user.fname} ${user.lname}`,
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
+		await axios.post(`https://api.vatusa.net/v2/facility/ZME/roster/manageVisitor/${req.params.cid}?apikey=${process.env.VATUSA_API_KEY}`)
 
 		await req.app.dossier.create({
 			by: res.user.cid,
 			affected: user.cid,
 			action: `%b approved the visiting application for %a.`
 		});
-	} 
+	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -569,30 +565,34 @@ router.delete('/visit/:cid', getUser, auth(['atm', 'datm']), async (req, res) =>
 
 		const user = await User.findOne({cid: req.params.cid});
 
-		await transporter.sendMail({
-			to: user.email,
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `Visiting Application Rejected | Albuquerque ARTCC`,
-			template: 'visitRejected',
-			context: {
-				name: `${user.fname} ${user.lname}`,
-				reason: req.body.reason
-			}
-		});
+		if (process.env.EMAIL_ENABLED == "true") {
+			await transporter.sendMail({
+				to: user.email,
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `Visiting Application Rejected | Memphis ARTCC`,
+				template: 'visitRejected',
+				context: {
+					name: `${user.fname} ${user.lname}`,
+					reason: req.body.reason
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
 		await req.app.dossier.create({
 			by: res.user.cid,
 			affected: user.cid,
 			action: `%b rejected the visiting application for %a: ${req.body.reason}`
 		});
-	} 
+	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -605,7 +605,6 @@ router.post('/:cid', microAuth, async (req, res) => {
 				message: "This user already exists"
 			};
 		}
-		
 		if(!req.body) {
 			throw {
 				code: 400,
@@ -618,7 +617,7 @@ router.post('/:cid', microAuth, async (req, res) => {
 		const {data} = await axios.get(`https://ui-avatars.com/api/?name=${userOi}&size=256&background=122049&color=ffffff`, {responseType: 'arraybuffer'});
 
 		await req.app.s3.putObject({
-			Bucket: 'zabartcc/avatars',
+			Bucket: 'memphis-artcc/avatars',
 			Key: `${req.body.cid}-default.png`,
 			Body: data,
 			ContentType: 'image/png',
@@ -634,24 +633,29 @@ router.post('/:cid', microAuth, async (req, res) => {
 
 		const ratings = ['Unknown', 'OBS', 'S1', 'S2', 'S3', 'C1', 'C2', 'C3', 'I1', 'I2', 'I3', 'SUP', 'ADM'];
 
-		await transporter.sendMail({
-			to: "atm@zabartcc.org; datm@zabartcc.org; ta@zabartcc.org",
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `New ${req.body.vis ? 'Visitor' : 'Member'}: ${req.body.fname} ${req.body.lname} | Albuquerque ARTCC`,
-			template: 'newController',
-			context: {
-				name: `${req.body.fname} ${req.body.lname}`,
-				email: req.body.email,
-				cid: req.body.cid,
-				rating: ratings[req.body.rating],
-				vis: req.body.vis,
-				type: req.body.vis ? 'visitor' : 'member',
-				home: req.body.vis ? req.body.homeFacility : 'ZAB'
-			}
-		});
+		if (process.env.EMAIL_ENABLED == "true") {
+			await transporter.sendMail({
+				to: "atm@memphisartcc.com; datm@memphisartcc.com; ta@memphisartcc.com",
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `New ${req.body.vis ? 'Visitor' : 'Member'}: ${req.body.fname} ${req.body.lname} | Memphis ARTCC`,
+				template: 'newController',
+				context: {
+					name: `${req.body.fname} ${req.body.lname}`,
+					email: req.body.email,
+					cid: req.body.cid,
+					rating: ratings[req.body.rating],
+					vis: req.body.vis,
+					type: req.body.vis ? 'visitor' : 'member',
+					home: req.body.vis ? req.body.homeFacility : 'ZME'
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
 
 		await req.app.dossier.create({
 			by: -1,
@@ -660,10 +664,9 @@ router.post('/:cid', microAuth, async (req, res) => {
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-		
 	return res.json(res.stdRes);
 });
 
@@ -686,7 +689,6 @@ router.put('/:cid/member', microAuth, async (req, res) => {
 
 		await user.save();
 
-		
 		await req.app.dossier.create({
 			by: -1,
 			affected: req.params.cid,
@@ -694,10 +696,9 @@ router.put('/:cid/member', microAuth, async (req, res) => {
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-		
 	return res.json(res.stdRes);
 })
 
@@ -724,10 +725,9 @@ router.put('/:cid/visit', microAuth, async (req, res) => {
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-		
 	return res.json(res.stdRes);
 })
 
@@ -739,7 +739,6 @@ router.put('/:cid', getUser, auth(['atm', 'datm', 'ta', 'wm', 'ins']), async (re
 				message: "No user data included"
 			};
 		}
-		
 		const {fname, lname, email, oi, roles, certs, vis} = req.body.form;
 		const toApply = {
 			roles: [],
@@ -761,7 +760,7 @@ router.put('/:cid', getUser, auth(['atm', 'datm', 'ta', 'wm', 'ins']), async (re
 		const {data} = await axios.get(`https://ui-avatars.com/api/?name=${oi}&size=256&background=122049&color=ffffff`, {responseType: 'arraybuffer'});
 
 		await req.app.s3.putObject({
-			Bucket: 'zabartcc/avatars',
+			Bucket: 'memphis-artcc/avatars',
 			Key: `${req.params.cid}-default.png`,
 			Body: data,
 			ContentType: 'image/png',
@@ -771,7 +770,7 @@ router.put('/:cid', getUser, auth(['atm', 'datm', 'ta', 'wm', 'ins']), async (re
 
 		await User.findOneAndUpdate({cid: req.params.cid}, {
 			fname,
-			lname, 
+			lname,
 			email,
 			oi,
 			vis,
@@ -786,10 +785,9 @@ router.put('/:cid', getUser, auth(['atm', 'datm', 'ta', 'wm', 'ins']), async (re
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -807,7 +805,7 @@ router.delete('/:cid', getUser, auth(['atm', 'datm']), async (req, res) => {
 		});
 
 		if(user.vis) {
-			await axios.delete(`https://api.vatusa.net/v2/facility/ZAB/roster/manageVisitor/${req.params.cid}`, {
+			await axios.delete(`https://api.vatusa.net/v2/facility/ZME/roster/manageVisitor/${req.params.cid}`, {
 				params: {
 					apikey: process.env.VATUSA_API_KEY,
 				},
@@ -816,7 +814,7 @@ router.delete('/:cid', getUser, auth(['atm', 'datm']), async (req, res) => {
 				}
 			});
 		} else {
-			await axios.delete(`https://api.vatusa.net/v2/facility/ZAB/roster/${req.params.cid}`, {
+			await axios.delete(`https://api.vatusa.net/v2/facility/ZME/roster/${req.params.cid}`, {
 				params: {
 					apikey: process.env.VATUSA_API_KEY,
 				},
@@ -833,10 +831,9 @@ router.delete('/:cid', getUser, auth(['atm', 'datm']), async (req, res) => {
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -852,13 +849,10 @@ const generateOperatingInitials = (fname, lname, usedOi) => {
 	const MAX_TRIES = 10;
 
 	operatingInitials = `${fname.charAt(0).toUpperCase()}${lname.charAt(0).toUpperCase()}`;
-	
 	if(!usedOi.includes(operatingInitials)) {
 		return operatingInitials;
 	}
-	
 	operatingInitials = `${lname.charAt(0).toUpperCase()}${fname.charAt(0).toUpperCase()}`;
-	
 	if(!usedOi.includes(operatingInitials)) {
 		return operatingInitials;
 	}

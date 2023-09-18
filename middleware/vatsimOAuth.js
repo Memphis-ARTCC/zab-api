@@ -6,13 +6,12 @@ export default function (req, res, next) {
   const code = req.body.code;
   let redirectUrl = "/login/verify";
 
-  const vatsimOauthTokenEndpoint =
-    process.env.VATSIM_AUTH_ENDPOINT + "/oauth/token";
+  const vatsimOauthTokenEndpoint = "https://auth.vatsim.net/oauth/token";
 
   if (process.env.NODE_ENV === "beta") {
-    redirectUrl = "https://beta.zabartcc.org" + redirectUrl;
-  } else if (process.env.NODE_ENV === "prod") {
-    redirectUrl = "https://zabartcc.org" + redirectUrl;
+    redirectUrl = "https://beta.memphisartcc.com" + redirectUrl;
+  } else if (process.env.NODE_ENV === "production") {
+    redirectUrl = "https://memphisartcc.com" + redirectUrl;
   } else {
     redirectUrl = "http://localhost:8080" + redirectUrl;
   }

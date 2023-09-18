@@ -1,7 +1,5 @@
 // Core imports
 import express from 'express';
-import * as Sentry from "@sentry/node";
-import * as Tracing from '@sentry/tracing';
 import cookie from 'cookie-parser';
 import cors from 'cors';
 import env from 'dotenv';
@@ -30,31 +28,6 @@ env.config();
 // Setup Express
 const app = express();
 
-if(process.env.NODE_ENV === 'production') {
-	Sentry.init({
-		dsn: "https://1ef975d497c5404f8aadd6b97cd48424@o885721.ingest.sentry.io/5837848",  
-		integrations: [
-			new Sentry.Integrations.Http({ tracing: true }),
-			new Tracing.Integrations.Express({ 
-				app, 
-			}),
-		],
-		tracesSampleRate: 0.5,
-	});
-
-	app.use(Sentry.Handlers.requestHandler());
-	app.use(Sentry.Handlers.tracingHandler());
-} else {
-	app.Sentry = {
-		captureException(e) {
-			console.log(e);
-		},
-		captureMessage(m) {
-			console.log(m);
-		}
-	};
-}
-
 app.use((req, res, next) => {
 	res.stdRes = {
 		ret_det: {
@@ -80,6 +53,7 @@ app.redis.on('error', err => { throw new Error(`Failed to connect to Redis: ${er
 app.redis.on('connect', () => console.log('Successfully connected to Redis'));
 
 const origins = process.env.CORS_ORIGIN.split('|');
+console.log(`Allowed origins: ${origins}`)
 
 app.use(cors({
 	origin: origins,
@@ -87,7 +61,7 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Origin', process.env.NODE_ENV === "production" ? "*" : "http://localhost:8080");
 	res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 	res.setHeader('Access-Control-Allow-Credentials', true);
@@ -96,7 +70,7 @@ app.use((req, res, next) => {
 
 
 app.s3 = new aws.S3({
-	endpoint: new aws.Endpoint('sfo3.digitaloceanspaces.com'),
+	endpoint: new aws.Endpoint('nyc3.digitaloceanspaces.com'),
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
@@ -121,8 +95,6 @@ app.use('/ids', IdsController);
 app.use('/training', TrainingController);
 app.use('/discord', DiscordController);
 app.use('/stats', StatsController);
-
-if(process.env.NODE_ENV === 'production') app.use(Sentry.Handlers.errorHandler());
 
 app.listen('3000', () =>{
 	console.log('Listening on port 3000');

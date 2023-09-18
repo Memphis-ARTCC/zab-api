@@ -5,11 +5,11 @@ import path from 'path';
 const __dirname = path.resolve();
 
 const transport = nodemailer.createTransport({
-	host: "sunport.zabartcc.org",
+	host: "email-smtp.us-east-1.amazonaws.com",
 	port: 587,
 	auth: {
-		user: 'noreply@zabartcc.org',
-		pass: process.env.EMAIL_PASSWORD
+		user: process.env.NODEMAILER_USER,
+		pass: process.env.NODEMAILER_PASS
 	},
 });
 

@@ -15,10 +15,9 @@ router.get('/users', microAuth, async (req, res) => {
 		res.stdRes.data = users;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 })
 
@@ -29,7 +28,7 @@ router.get('/withyou', microAuth, async (req, res) => {
 		res.stdRes.data = withYou;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -43,7 +42,7 @@ router.post('/withyou', microAuth, async (req, res) => {
 		await withYou.save();
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -57,7 +56,7 @@ router.delete('/withyou', microAuth, async (req, res) => {
 		await withYou.save();
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -104,12 +103,12 @@ router.post('/pfr', getUser, async (req, res) => {
 						},
 					],
 					author: {
-						name: "Albuquerque ARTCC",
-						icon_url: "https://zabartcc.sfo3.digitaloceanspaces.com/images/zab_logo.png"
+						name: "Memphis ARTCC",
+						icon_url: "https://memphis-artcc.nyc3.digitaloceanspaces.com/images/zme_logo.png"
 					},
 					footer: {
-						text: "This PFR was submitted via the ZAB Website.",
-						icon_url: "https://zabartcc.sfo3.digitaloceanspaces.com/images/zab_logo.png"
+						text: "This PFR was submitted via the ZME Website.",
+						icon_url: "https://memphis-artcc.nyc3.digitaloceanspaces.com/images/zme_logo.png"
 					},
 					timestamp: new Date(),
 				}
@@ -126,11 +125,10 @@ router.post('/pfr', getUser, async (req, res) => {
 		await axios.post(`https://discord.com/api/webhooks/932108922695847988/${process.env.DISCORD_PFR_WEBHOOK_TOKEN}`, discordWebhook);
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
 	return res.json(res.stdRes);
 })
-	
 export default router;

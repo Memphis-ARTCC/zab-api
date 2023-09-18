@@ -3,7 +3,7 @@ import getUser from '../middleware/getUser.js';
 import auth from '../middleware/auth.js';
 import microAuth from '../middleware/microAuth.js';
 import axios from 'axios';
-import zab from '../config/zab.js';
+import zme from '../config/zme.js';
 const router = express.Router();
 
 import ControllerHours from '../models/ControllerHours.js';
@@ -110,7 +110,7 @@ router.get('/admin', getUser, auth(['atm', 'datm', 'ta', 'fe', 'ec', 'wm']), asy
 			byRating: ratingCounts.reverse()
 		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -163,7 +163,7 @@ router.get('/ins', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), async (re
 			controllersWithoutTraining
 		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -206,15 +206,13 @@ router.get('/activity', getUser, auth(['atm', 'datm', 'ta', 'wm']), async (req, 
 				totalTime,
 				totalRequests,
 				tooLow: totalTime < 7200 && (user.joinDate ?? user.createdAt) < chkDate && !totalRequests,
-				protected: user.isStaff || [995625, 1118012, 1167179, 1427985].includes(user.cid)
+				protected: user.isStaff
 			}
 		}
 		res.stdRes.data = Object.values(userData);
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 })
 

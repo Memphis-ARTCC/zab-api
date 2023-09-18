@@ -61,7 +61,7 @@ router.get("/", async (req, res) => {
         });
     });
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -89,7 +89,7 @@ router.post("/idsToken", getUser, async (req, res) => {
 
     res.stdRes.data = res.user.idsToken;
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -163,7 +163,7 @@ router.post("/login", oAuth, async (req, res) => {
 
       await req.app.s3
         .putObject({
-          Bucket: "zabartcc/avatars",
+          Bucket: "memphis-artcc/avatars",
           Key: `${user.cid}-default.png`,
           Body: data,
           ContentType: "image/png",
@@ -187,11 +187,9 @@ router.post("/login", oAuth, async (req, res) => {
       sameSite: true,
     }); // Expires in 5 days
   } catch (e) {
-    req.app.Sentry.captureException(e);
     res.stdRes.ret_det = e;
     res.status(500);
   }
-
   return res.json(res.stdRes);
 });
 
@@ -205,7 +203,6 @@ router.get("/logout", async (req, res) => {
     }
     res.cookie("token", "", { expires: new Date(0) });
   } catch (e) {
-    req.app.Sentry.captureException(e);
     res.stdRes.ret_det = e;
   }
 
@@ -220,7 +217,7 @@ router.get("/sessions", getUser, async (req, res) => {
       .lean();
     res.stdRes.data = sessions;
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -231,7 +228,7 @@ router.get("/discord", getUser, async (req, res) => {
   try {
     res.stdRes.data = !!res.user.discordInfo.clientId;
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -283,7 +280,7 @@ router.post("/discord", async (req, res) => {
       .get("https://discord.com/api/users/@me", {
         headers: {
           Authorization: `${token.token_type} ${token.access_token}`,
-          "User-Agent": "Albuquerque ARTCC API",
+          "User-Agent": "Memphis ARTCC API",
         },
       })
       .catch((err) => {
@@ -315,7 +312,7 @@ router.post("/discord", async (req, res) => {
       action: `%b connected their Discord.`,
     });
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -327,7 +324,7 @@ router.delete("/discord", getUser, async (req, res) => {
     res.user.discordInfo = undefined;
     await res.user.save();
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -363,7 +360,7 @@ router.get("/notifications", getUser, async (req, res) => {
       notif,
     };
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -379,7 +376,7 @@ router.put("/notifications/read/all", getUser, async (req, res) => {
       }
     );
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -398,7 +395,7 @@ router.put("/notifications/read/:id", async (req, res) => {
       read: true,
     });
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -409,7 +406,7 @@ router.delete("/notifications", getUser, async (req, res) => {
   try {
     await Notification.delete({ recipient: res.user.cid });
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 
@@ -433,7 +430,7 @@ router.put("/profile", getUser, async (req, res) => {
       action: `%b updated their profile.`,
     });
   } catch (e) {
-    req.app.Sentry.captureException(e);
+    
     res.stdRes.ret_det = e;
   }
 

@@ -5,29 +5,36 @@ import AtcOnline from '../models/AtcOnline.js';
 import ControllerHours from '../models/ControllerHours.js';
 
 const airports = {
-	PHX: 'Phoenix', 
-    ABQ: 'Albuquerque', 
-    TUS: 'Tucson', 
-    AMA: 'Amarillo', 
-    ROW: 'Roswell', 
-    ELP: 'El Paso', 
-    SDL: 'Scottsdale', 
-    CHD: 'Chandler', 
-    FFZ: 'Falcon', 
-    IWA: 'Gateway', 
-    DVT: 'Deer Valley', 
-    GEU: 'Glendale', 
-    GYR: 'Goodyear', 
-    LUF: 'Luke', 
-    RYN: 'Ryan', 
-    DMA: 'Davis-Monthan',
-    FLG: 'Flagstaff', 
-    PRC: 'Prescott', 
-    AEG: 'Double Eagle', 
-    BIF: 'Biggs', 
-    HMN: 'Holoman', 
-    SAF: 'Santa Fe',
-    FHU: 'Libby'
+    BNA: 'Nashville',
+    FSM: 'Fort Smith',
+    HSV: 'Huntsville',
+    JAN: 'Jackson',
+    LIT: 'Little Rock',
+    CBM: 'Columbus',
+    HOP: 'Fort Campbell',
+    NMM: 'Meridian',
+    ASG: 'Springdale',
+    CGI: 'Cape Girardeau',
+    EOD: 'Sabre',
+    FYV: 'Drake',
+    GLH: 'Greenville',
+    GTR: 'Golden Triangle',
+    GWO: 'Greenwood',
+    HKS: 'Hawkins',
+    HUA: 'Redstone',
+    JWN: 'John Tune',
+    LIT: 'Little Rock',
+    MEI: 'Key Field',
+    MEM: 'Memphis',
+    MKL: 'Jackson',
+    MQY: 'Smyrna',
+    NJW: 'Joe Williams',
+    NQA: 'Millington',
+    OLV: 'Olive Branch',
+    PAH: 'Paducah',
+    ROG: 'Rogers',
+    TUP: 'Tupelo',
+    XNA: 'Northwest Arkansas'
 };
 
 const positions = {
@@ -49,7 +56,6 @@ router.get('/', async ({res}) => {
 			atc: atc
 		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
@@ -87,7 +93,6 @@ router.get('/top', async (req, res) => {
 		res.stdRes.data.controllers = Object.values(controllerTimes).sort((a, b) => b.len - a.len).slice(0,5);
 		res.stdRes.data.positions = Object.values(positionTimes).sort((a, b) => b.len - a.len).slice(0,5);
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
