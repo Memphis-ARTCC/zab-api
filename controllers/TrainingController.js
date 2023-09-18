@@ -13,7 +13,7 @@ import microAuth from '../middleware/microAuth.js';
 router.get('/request/upcoming', getUser, async (req, res) => {
 	try {
 		const upcoming = await TrainingRequest.find({
-			studentCid: res.user.cid, 
+			studentCid: res.user.cid,
 			deleted: false,
 			startTime: {
 				$gt: new Date(new Date().toUTCString()) // request is in the future
@@ -22,7 +22,6 @@ router.get('/request/upcoming', getUser, async (req, res) => {
 
 		res.stdRes.data = upcoming;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
@@ -67,7 +66,6 @@ router.post('/request/new', getUser, async (req, res) => {
 		}
 
 		const totalRequests = await req.app.redis.get(`TRAININGREQ:${res.user.cid}`);
-		
 		if(totalRequests > 5) {
 			throw {
 				code: 429,
@@ -89,23 +87,28 @@ router.post('/request/new', getUser, async (req, res) => {
 		const student = await User.findOne({cid: res.user.cid}).select('fname lname').lean();
 		const milestone = await TrainingMilestone.findOne({code: req.body.milestone}).lean();
 
-		transporter.sendMail({
-			to: 'instructors@zabartcc.org',
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: `New Training Request: ${student.fname} ${student.lname} | Albuquerque ARTCC`,
-			template: 'newRequest',
-			context: {
-				student: student.fname + ' ' + student.lname,
-				startTime: new Date(req.body.startTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
-				endTime: new Date(req.body.endTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
-				milestone: milestone.code.toUpperCase() + ' - ' + milestone.name
-			}
-		});
+		if (process.env.EMAIL_ENABLED == "true") {
+			transporter.sendMail({
+				to: 'instructors@memphisartcc.com',
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: `New Training Request: ${student.fname} ${student.lname} | Memphis ARTCC`,
+				template: 'newRequest',
+				context: {
+					student: student.fname + ' ' + student.lname,
+					startTime: new Date(req.body.startTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
+					endTime: new Date(req.body.endTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
+					milestone: milestone.code.toUpperCase() + ' - ' + milestone.name
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -122,7 +125,7 @@ router.get('/milestones', getUser, async (req, res) => {
 			milestones
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -148,7 +151,7 @@ router.get('/request/open', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), 
 
 		res.stdRes.data = requests;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -182,24 +185,28 @@ router.post('/request/take/:id', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr
 		const student = await User.findOne({cid: request.studentCid}).select('fname lname email').lean();
 		const instructor = await User.findOne({cid: res.user.cid}).select('fname lname email').lean();
 
-		transporter.sendMail({
-			to: `${student.email}, ${instructor.email}`,
-			cc: 'ta@zabartcc.org',
-			from: {
-				name: "Albuquerque ARTCC",
-				address: 'noreply@zabartcc.org'
-			},
-			subject: 'Training Request Taken | Albuquerque ARTCC',
-			template: 'requestTaken',
-			context: {
-				student: student.fname + ' ' + student.lname,
-				instructor: instructor.fname + ' ' + instructor.lname,
-				startTime: new Date(session.startTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
-				endTime: new Date(session.endTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})
-			}
-		});
+		if (process.env.EMAIL_ENABLED == "true") {
+			transporter.sendMail({
+				to: `${student.email}, ${instructor.email}`,
+				cc: 'ta@memphisartcc.com',
+				from: {
+					name: "Memphis ARTCC",
+					address: 'noreply@memphisartcc.com'
+				},
+				subject: 'Training Request Taken | Memphis ARTCC',
+				template: 'requestTaken',
+				context: {
+					student: student.fname + ' ' + student.lname,
+					instructor: instructor.fname + ' ' + instructor.lname,
+					startTime: new Date(session.startTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
+					endTime: new Date(session.endTime).toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})
+				}
+			});
+		}
+		else {
+			console.log("Emails are disabled. Skipping email send.");
+		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
@@ -217,7 +224,7 @@ router.delete('/request/:id', getUser, auth(['atm', 'datm', 'ta']), async (req, 
 			action: `%b deleted a training request from %a.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -241,7 +248,7 @@ router.get('/request/:date', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']),
 
 		res.stdRes.data = requests;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -257,7 +264,7 @@ router.get('/session/open', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), 
 
 		res.stdRes.data = sessions;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -296,7 +303,7 @@ router.get('/session/:id', getUser, async(req, res) => {
 			res.stdRes.data = session;
 		}
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -326,7 +333,7 @@ router.get('/sessions', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), asyn
 			sessions: sessions
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -343,7 +350,7 @@ router.get('/sessions/forsync', microAuth, async (req, res) => {
 
 		res.stdRes.data = sessions;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -367,7 +374,7 @@ router.put('/sessions/setsynced', microAuth, async (req, res) => {
 			});
 		}
 	}  catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -397,7 +404,7 @@ router.get('/sessions/past', getUser, async (req, res) => {
 			sessions: sessions
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -434,7 +441,6 @@ router.get('/sessions/:cid', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']),
 			controller: controller
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
@@ -445,16 +451,18 @@ router.put('/session/save/:id', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr'
 	try {
 		await TrainingSession.findByIdAndUpdate(req.params.id, req.body);
 	} catch(e) {
-		req.app.Sentry.captureException(e);
 		res.stdRes.ret_det = e;
 	}
 
 	return res.json(res.stdRes);
 });
 
-router.put('/session/submit/:id', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), async(req, res) => {
+router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), async (req, res) => {
 	try {
-		if(req.body.position === '' || req.body.progress === null || req.body.movements === null || req.body.location === null || req.body.ots === null || req.body.studentNotes === null || (req.body.studentNotes && req.body.studentNotes.length > 3000) || (req.body.insNotes && req.body.insNotes.length > 3000)) {
+		if(!req.body.studentCid || !req.body.instructorCid || !req.body.startTime || !req.body.endTime || !req.body.milestoneCode ||
+			req.body.position === '' || req.body.progress === null || req.body.movements === null || req.body.location === null ||
+			req.body.ots === null || req.body.studentNotes === null || (req.body.studentNotes && req.body.studentNotes.length > 3000) ||
+			(req.body.insNotes && req.body.insNotes.length > 3000)) {
 			throw {
 				code: 400,
 				message: "You must fill out all required forms"
@@ -467,7 +475,12 @@ router.put('/session/submit/:id', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mt
 
 		const duration = `${('00' + hours).slice(-2)}:${('00' + minutes).slice(-2)}`;
 
-		const session = await TrainingSession.findByIdAndUpdate(req.params.id, {
+		const session = await TrainingSession.create({
+			studentCid: req.body.studentCid,
+			instructorCid: res.user.cid,
+			startTime: req.body.startTime,
+			endTime: req.body.endTime,
+			milestoneCode: req.body.milestoneCode,
 			position: req.body.position,
 			progress: req.body.progress,
 			duration: duration,
@@ -489,11 +502,10 @@ router.put('/session/submit/:id', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mt
 			content: `The training notes from your session with <b>${instructor.fname + ' ' + instructor.lname}</b> have been submitted.`,
 			link: `/dash/training/session/${req.params.id}`
 		});
-	} catch(e) {
-		req.app.Sentry.captureException(e);
+	}
+	catch (e) {
 		res.stdRes.ret_det = e;
 	}
-
 	return res.json(res.stdRes);
 });
 

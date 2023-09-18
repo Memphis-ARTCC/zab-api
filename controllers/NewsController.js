@@ -50,7 +50,7 @@ router.post('/', getUser, auth(['atm', 'datm', 'ta', 'ec', 'fe', 'wm']), async (
 
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -67,7 +67,7 @@ router.get('/:slug', async (req, res) =>{
 		res.stdRes.data = newsItem;
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -91,7 +91,7 @@ router.put('/:slug', getUser, auth(['atm', 'datm', 'ta', 'ec', 'fe', 'wm']), asy
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}	
 
@@ -117,7 +117,7 @@ router.delete('/:slug', getUser, auth(['atm', 'datm', 'ta', 'ec', 'fe', 'wm']), 
 		});
 	}
 	catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}	
 

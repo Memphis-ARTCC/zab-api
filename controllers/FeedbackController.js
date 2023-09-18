@@ -25,7 +25,7 @@ router.get('/', getUser, auth(['atm', 'datm', 'ta']), async (req, res) => { // A
 			feedback
 		};
 	} catch (e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -66,7 +66,7 @@ router.post('/', async (req, res) => { // Submit feedback
 			action: `%b submitted feeback about %a.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	
@@ -78,7 +78,7 @@ router.get('/controllers', async ({res}) => { // Controller list on feedback pag
 		const controllers = await User.find({deletedAt: null, member: true}).sort('fname').select('fname lname cid rating vis _id').lean();
 		res.stdRes.data = controllers;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -90,7 +90,7 @@ router.get('/unapproved', getUser, auth(['atm', 'datm', 'ta']), async ({res}) =>
 		const feedback = await Feedback.find({deletedAt: null, approved: false}).populate('controller', 'fname lname cid').sort({createdAt: 'desc'}).lean();
 		res.stdRes.data = feedback;
 	} catch (e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	return res.json(res.stdRes);
@@ -116,7 +116,7 @@ router.put('/approve/:id', getUser, auth(['atm', 'datm', 'ta']), async (req, res
 			action: `%b approved feedback for %a.`
 		});
 	} catch (e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -133,7 +133,7 @@ router.put('/reject/:id', getUser, auth(['atm', 'datm', 'ta']), async (req, res)
 			action: `%b rejected feedback for %a.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -170,7 +170,7 @@ router.get('/own', getUser, async (req, res) => {
 			amount
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 

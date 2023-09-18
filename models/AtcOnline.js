@@ -1,4 +1,4 @@
-import zab from '../config/zab.js';
+import zme from '../config/zme.js';
 import m from 'mongoose';
 import mlv from 'mongoose-lean-virtuals';
 
@@ -15,11 +15,11 @@ const atcOnlineSchema = new m.Schema({
 });
 
 atcOnlineSchema.virtual('ratingShort').get(function() {
-	return zab.ratings[this.rating];
+	return zme.ratings[this.rating];
 });
 
 atcOnlineSchema.virtual('ratingLong').get(function() {
-	return zab.ratingsLong[this.rating];
+	return zme.ratingsLong[this.rating];
 });
 
 atcOnlineSchema.plugin(mlv);

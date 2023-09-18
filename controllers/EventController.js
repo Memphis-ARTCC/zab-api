@@ -31,7 +31,7 @@ router.get('/', async ({res}) => {
 
 		res.stdRes.data = events;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -61,7 +61,7 @@ router.get('/archive', async(req, res) => {
 			events: events
 		};
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -77,7 +77,7 @@ router.get('/:slug', async(req, res) => {
 
 		res.stdRes.data = event;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -101,7 +101,7 @@ router.get('/:slug/positions', async(req, res) => {
 
 		res.stdRes.data = event;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -120,7 +120,7 @@ router.put('/:slug/signup', getUser, async (req, res) => {
 		if(res.user.member === false) {
 			throw {
 				code: 403,
-				message: "You must be a member of ZAB"
+				message: "You must be a member of ZME"
 			}
 		}
 
@@ -138,7 +138,7 @@ router.put('/:slug/signup', getUser, async (req, res) => {
 				signups: {
 					cid: res.user.cid,
 					requests: req.body.requests
-				} 
+				}
 			}
 		});
 
@@ -148,7 +148,7 @@ router.put('/:slug/signup', getUser, async (req, res) => {
 			action: `%b signed up for the event *${event.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -171,7 +171,7 @@ router.delete('/:slug/signup', getUser, async (req, res) => {
 			action: `%b deleted their signup for the event *${event.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -204,7 +204,7 @@ router.delete('/:slug/mandelete/:cid', getUser, auth(['atm', 'datm', 'ec']), asy
 			action: `%b manually deleted the event signup for %a for the event *${signup.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -235,7 +235,7 @@ router.put('/:slug/mansignup/:cid', getUser, auth(['atm', 'datm', 'ec']), async 
 			};
 		}
 	} catch (e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -262,9 +262,8 @@ router.post('/', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner'), 
 		}
 
 		const tmpFile = await fs.readFile(req.file.path);
-		
 		await req.app.s3.putObject({
-			Bucket: 'zabartcc/events',
+			Bucket: 'memphis-artcc/events',
 			Key: req.file.filename,
 			Body: tmpFile,
 			ContentType: req.file.mimetype,
@@ -290,7 +289,7 @@ router.post('/', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner'), 
 			action: `%b created the event *${req.body.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 	return res.json(res.stdRes);
@@ -307,7 +306,7 @@ router.put('/:slug', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner
 		event.description = description;
 		event.eventStart = startTime;
 		event.eventEnd = endTime;
-		
+
 		const computedPositions = [];
 
 		for(const pos of JSON.parse(positions)) {
@@ -316,28 +315,28 @@ router.put('/:slug', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner
 				computedPositions.push({
 					pos,
 					type: thePos[2],
-					code: 'zab',
+					code: 'zme',
 				})
 			}
 			if(['APP', 'DEP'].includes(thePos[2])) {
 				computedPositions.push({
 					pos,
 					type: thePos[2],
-					code: (thePos[1] === "PHX") ? 'p50app' : 'app',
+					code: (thePos[1] === "MEM") ? 'memapp' : 'app',
 				})
 			}
 			if(['TWR'].includes(thePos[2])) {
 				computedPositions.push({
 					pos,
 					type: thePos[2],
-					code: (thePos[1] === "PHX") ? 'p50twr' : 'twr',
+					code: (thePos[1] === "MEM") ? 'memtwr' : 'twr',
 				})
 			}
 			if(['GND', 'DEL'].includes(thePos[2])) {
 				computedPositions.push({
 					pos,
 					type: thePos[2],
-					code: (thePos[1] === "PHX") ? 'p50gnd' : 'gnd',
+					code: (thePos[1] === "MEM") ? 'memgnd' : 'gnd',
 				})
 			}
 		}
@@ -382,14 +381,13 @@ router.put('/:slug', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner
 			}
 			const tmpFile = await fs.readFile(req.file.path);
 			await req.app.s3.putObject({
-				Bucket: 'zabartcc/events',
+				Bucket: 'memphis-artcc/events',
 				Key: req.file.filename,
 				Body: tmpFile,
 				ContentType: req.file.mimetype,
 				ACL: 'public-read',
 				ContentDisposition: 'inline',
 			}).promise();
-			
 			event.bannerUrl = req.file.filename;
 		}
 
@@ -401,7 +399,7 @@ router.put('/:slug', getUser, auth(['atm', 'datm', 'ec']), upload.single('banner
 			action: `%b updated the event *${event.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -420,7 +418,7 @@ router.delete('/:slug', getUser, auth(['atm', 'datm', 'ec']), async (req, res) =
 		});
 
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -441,7 +439,7 @@ router.delete('/:slug', getUser, auth(['atm', 'datm', 'ec']), async (req, res) =
 // 			action: `%b updated the positions assignments for the event *${event.name}*.`
 // 		});
 // 	} catch (e) {
-// 		req.app.Sentry.captureException(e);
+// 		
 // 		res.stdRes.ret_det = e;
 // 	}
 
@@ -473,11 +471,10 @@ router.put('/:slug/assign', getUser, auth(['atm', 'datm', 'ec']), async (req, re
 				action: `%b unassigned *${assignedPosition.pos}* for *${event.name}*.`
 			});
 		}
-		
 		res.stdRes.data = assignedPosition;
 
 	} catch (e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -495,20 +492,25 @@ router.put('/:slug/notify', getUser, auth(['atm', 'datm', 'ec']), async (req, re
 
 		const getSignups = await Event.findOne({url: req.params.slug }, 'name url signups').populate('signups.user', 'fname lname email').lean();
 		getSignups.signups.forEach(async (signup) => {
-			await transporter.sendMail({
-				to: signup.user.email,
-				from: {
-					name: "Albuquerque ARTCC",
-					address: 'noreply@zabartcc.org'
-				},
-				subject: `Position Assignments for ${getSignups.name} | Albuquerque ARTCC`,
-				template: 'event',
-				context: {
-					eventTitle: getSignups.name,
-					name: `${signup.user.fname} ${signup.user.lname}`,
-					slug: getSignups.url
-				}
-			});
+			if (process.env.EMAIL_ENABLED == "true") {
+				await transporter.sendMail({
+					to: signup.user.email,
+					from: {
+						name: "Memphis ARTCC",
+						address: 'noreply@memphisartcc.com'
+					},
+					subject: `Position Assignments for ${getSignups.name} | Memphis ARTCC`,
+					template: 'event',
+					context: {
+						eventTitle: getSignups.name,
+						name: `${signup.user.fname} ${signup.user.lname}`,
+						slug: getSignups.url
+					}
+				});
+			}
+			else {
+				console.log("Emails are disabled. Skipping email send.");
+			}
 		});
 
 		await req.app.dossier.create({
@@ -517,7 +519,7 @@ router.put('/:slug/notify', getUser, auth(['atm', 'datm', 'ec']), async (req, re
 			action: `%b notified controllers of positions for the event *${getSignups.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -532,7 +534,7 @@ router.put('/:slug/close', getUser, auth(['atm', 'datm', 'ec']), async (req, res
 			}
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 

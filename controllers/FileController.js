@@ -9,7 +9,7 @@ import getUser from '../middleware/getUser.js';
 import auth from '../middleware/auth.js';
 
 const s3 = new aws.S3({
-	endpoint: new aws.Endpoint('sfo3.digitaloceanspaces.com'),
+	endpoint: new aws.Endpoint('nyc3.digitaloceanspaces.com'),
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
@@ -31,7 +31,7 @@ router.get('/downloads', async ({res}) => {
 		const downloads = await Downloads.find({deletedAt: null}).sort({category: "asc"}).sort({name: 'asc'}).lean();
 		res.stdRes.data = downloads;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -43,10 +43,9 @@ router.get('/downloads/:id', async (req, res) => {
 		const download = await Downloads.findById(req.params.id).lean();
 		res.stdRes.data = download;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 });
 
@@ -66,7 +65,7 @@ router.post('/downloads', getUser, auth(['atm', 'datm', 'ta', 'fe']), upload.sin
 		}
 		const tmpFile = await fs.readFile(req.file.path);
 		await s3.putObject({
-			Bucket: 'zabartcc/downloads',
+			Bucket: 'memphis-artcc/downloads',
 			Key: req.file.filename,
 			Body: tmpFile,
 			ContentType: req.file.mimetype,
@@ -81,14 +80,13 @@ router.post('/downloads', getUser, auth(['atm', 'datm', 'ta', 'fe']), upload.sin
 			author: req.body.author
 		});
 
-		
 		await req.app.dossier.create({
 			by: res.user.cid,
 			affected: -1,
 			action: `%b created the file *${req.body.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -113,7 +111,7 @@ router.put('/downloads/:id', upload.single('download'), getUser, auth(['atm', 'd
 			}
 			const tmpFile = await fs.readFile(req.file.path);
 			await s3.putObject({
-				Bucket: 'zabartcc/downloads',
+				Bucket: 'memphis-artcc/downloads',
 				Key: req.file.filename,
 				Body: tmpFile,
 				ContentType: req.file.mimetype,
@@ -133,7 +131,7 @@ router.put('/downloads/:id', upload.single('download'), getUser, auth(['atm', 'd
 			action: `%b updated the file *${req.body.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -149,7 +147,7 @@ router.delete('/downloads/:id', getUser, auth(['atm', 'datm', 'ta', 'fe']), asyn
 			action: `%b deleted the file *${download.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.std_res = e;
 	}
 
@@ -162,7 +160,7 @@ router.get('/documents', async ({res}) => {
 		const documents = await Document.find({deletedAt: null}).select('-content').sort({category: "asc"}).sort({name: 'asc'}).lean();
 		res.stdRes.data = documents;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -174,7 +172,7 @@ router.get('/documents/:slug', async (req, res) => {
 		const document = await Document.findOne({slug: req.params.slug, deletedAt: null}).lean();
 		res.stdRes.data = document;
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -210,7 +208,7 @@ router.post('/documents', getUser, auth(['atm', 'datm', 'ta', 'fe']), upload.sin
 
 			const tmpFile = await fs.readFile(req.file.path);
 			await s3.putObject({
-				Bucket: 'zabartcc/downloads',
+				Bucket: 'memphis-artcc/downloads',
 				Key: req.file.filename,
 				Body: tmpFile,
 				ContentType: req.file.mimetype,
@@ -245,7 +243,7 @@ router.post('/documents', getUser, auth(['atm', 'datm', 'ta', 'fe']), upload.sin
 		});
 		
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.ret_det = e;
 	}
 
@@ -262,7 +260,6 @@ router.put('/documents/:slug', upload.single('download'), getUser, auth(['atm', 
 				document.name = name;
 				document.slug = name.replace(/\s+/g, '-').toLowerCase().replace(/^-+|-+(?=-|$)/g, '').replace(/[^a-zA-Z0-9-_]/g, '') + '-' + Date.now().toString().slice(-5);
 			}
-			
 			document.type = 'doc';
 			document.category = category;
 			document.description = description;
@@ -286,13 +283,12 @@ router.put('/documents/:slug', upload.single('download'), getUser, auth(['atm', 
 				}
 				const tmpFile = await fs.readFile(req.file.path);
 				await s3.putObject({
-					Bucket: 'zabartcc/downloads',
+					Bucket: 'memphis-artcc/downloads',
 					Key: req.file.filename,
 					Body: tmpFile,
 					ContentType: req.file.mimetype,
 					ACL: 'public-read',
 				}).promise();
-				
 				await Document.findOneAndUpdate({slug: req.params.slug}, {
 					name: req.body.name,
 					description: req.body.description,
@@ -311,7 +307,7 @@ router.put('/documents/:slug', upload.single('download'), getUser, auth(['atm', 
 
 		return res.json(res.stdRes);
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.std_res = e;
 	}
 
@@ -327,7 +323,7 @@ router.delete('/documents/:id', getUser, auth(['atm', 'datm', 'ta', 'fe']), asyn
 			action: `%b deleted the document *${doc.name}*.`
 		});
 	} catch(e) {
-		req.app.Sentry.captureException(e);
+		
 		res.stdRes.std_res = e;
 	}
 
