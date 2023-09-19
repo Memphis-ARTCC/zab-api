@@ -145,9 +145,9 @@ router.get('/staff', async (req, res) => {
 				code: "instructors",
 				users: []
 			},
-			dta: {
-				title: "Deputy Training Administrator",
-				code: "dta",
+			ata: {
+				title: "Assistant Training Administrator",
+				code: "ata",
 				users: []
 			},
 		};
