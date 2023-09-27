@@ -511,7 +511,7 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 		formData.append("location", req.body.location);
 		formData.append("ots", req.body.ots);
 
-		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, formdata);
+		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, formData);
 
 		session.synced = true;
 		session.save();
