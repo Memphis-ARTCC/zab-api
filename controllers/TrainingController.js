@@ -455,16 +455,6 @@ router.put('/session/save/:id', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins'
 
 router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'mtr']), async (req, res) => {
 	try {
-		console.log(req.body);
-		if(!req.body.studentCid || !req.body.startTime || !req.body.endTime || !req.body.milestone || !req.body.insNotes ||
-			!req.body.position || !req.body.progress || !req.body.movements || !req.body.location ||
-			!req.body.ots || !req.body.studentNotes) {
-			throw {
-				code: 400,
-				message: "You must fill out all required forms"
-			};
-		}
-
 		const delta = Math.abs(new Date(req.body.endTime) - new Date(req.body.startTime)) / 1000;
 		const hours = Math.floor(delta / 3600);
 		const minutes = Math.floor(delta / 60) % 60;
