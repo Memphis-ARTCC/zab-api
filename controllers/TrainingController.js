@@ -457,8 +457,7 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 	try {
 		if(!req.body.studentCid || !req.body.startTime || !req.body.endTime || !req.body.milestone || !req.body.insNotes ||
 			!req.body.position || !req.body.progress || !req.body.movements || !req.body.location ||
-			!req.body.ots || !req.body.studentNotes || (req.body.studentNotes && req.body.studentNotes.length > 3000) ||
-			(req.body.insNotes && req.body.insNotes.length > 3000)) {
+			!req.body.ots || !req.body.studentNotes) {
 			throw {
 				code: 400,
 				message: "You must fill out all required forms"
