@@ -9,6 +9,8 @@ import User from '../models/User.js';
 import getUser from '../middleware/getUser.js';
 import auth from '../middleware/auth.js';
 import microAuth from '../middleware/microAuth.js';
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 router.get('/request/upcoming', getUser, async (req, res) => {
 	try {
@@ -333,7 +335,6 @@ router.get('/sessions', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), asyn
 			sessions: sessions
 		};
 	} catch(e) {
-		
 		res.stdRes.ret_det = e;
 	}
 
@@ -343,14 +344,13 @@ router.get('/sessions', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), asyn
 router.get('/sessions/forsync', microAuth, async (req, res) => {
 	try {
 		const sessions = await TrainingSession.find({
-			$or: [{synced: false}, {synced: null}] 
+			$or: [{synced: false}, {synced: null}]
 		}).sort({
 			createdAt: 'desc'
 		}).lean();
 
 		res.stdRes.data = sessions;
 	} catch(e) {
-		
 		res.stdRes.ret_det = e;
 	}
 
@@ -374,10 +374,8 @@ router.put('/sessions/setsynced', microAuth, async (req, res) => {
 			});
 		}
 	}  catch(e) {
-		
 		res.stdRes.ret_det = e;
 	}
-	
 	return res.json(res.stdRes);
 })
 
@@ -404,7 +402,6 @@ router.get('/sessions/past', getUser, async (req, res) => {
 			sessions: sessions
 		};
 	} catch(e) {
-		
 		res.stdRes.ret_det = e;
 	}
 
@@ -495,12 +492,27 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ins', 'mtr']), 
 
 		const instructor = await User.findOne({cid: session.instructorCid}).select('fname lname').lean();
 
+		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
+			instructor_id: instructor.cid,
+			session_date: req.body.startTime,
+			position: req.body.position,
+			duration: duration,
+			movements: req.body.movements,
+			score: req.body.progress,
+			notes: req.body.studentNotes,
+			location: req.body.location,
+			ots: req.body.ots
+		})
+
+		session.synced = true;
+		session.save();
+
 		await Notification.create({
 			recipient: session.studentCid,
 			read: false,
 			title: 'Training Notes Submitted',
 			content: `The training notes from your session with <b>${instructor.fname + ' ' + instructor.lname}</b> have been submitted.`,
-			link: `/dash/training/session/${req.params.id}`
+			link: `/dash/training/session/${session.id}`
 		});
 	}
 	catch (e) {

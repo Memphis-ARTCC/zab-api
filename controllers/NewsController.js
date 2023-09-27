@@ -124,20 +124,4 @@ router.delete('/:slug', getUser, auth(['atm', 'datm', 'ta', 'ec', 'fe', 'wm']), 
 	return res.json(res.stdRes);
 });
 
-// router.get('/seed', async (req, res) => {
-// 	await News.create({
-// 		title: "Test 1",
-// 		uriSlug: 'test-1',
-// 		content: 'This is test content for the news system.',
-// 		createdBy: '60089d338b76613ca9a0ea12'
-// 	}, {
-// 		title: "Test 2",
-// 		uriSlug: 'test-2',
-// 		content: 'This is test content number 2 for the news system.',
-// 		createdBy: '60089d338b76613ca9a0ea12'
-// 	});
-
-// 	res.sendStatus(200);
-// });
-
 export default router;
