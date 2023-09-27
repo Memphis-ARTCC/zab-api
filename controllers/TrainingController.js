@@ -455,9 +455,9 @@ router.put('/session/save/:id', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins'
 
 router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'mtr']), async (req, res) => {
 
-	const duration = 0;
-	const session = null;
-	const instructor = null;
+	let duration = 0;
+	let session = null;
+	let instructor = null;
 
 	try {
 		const delta = Math.abs(new Date(req.body.endTime) - new Date(req.body.startTime)) / 1000;
