@@ -454,14 +454,19 @@ router.put('/session/save/:id', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins'
 });
 
 router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'mtr']), async (req, res) => {
+
+	const duration = 0;
+	const session = null;
+	const instructor = null;
+
 	try {
 		const delta = Math.abs(new Date(req.body.endTime) - new Date(req.body.startTime)) / 1000;
 		const hours = Math.floor(delta / 3600);
 		const minutes = Math.floor(delta / 60) % 60;
 
-		const duration = `${('00' + hours).slice(-2)}:${('00' + minutes).slice(-2)}`;
+		duration = `${('00' + hours).slice(-2)}:${('00' + minutes).slice(-2)}`;
 
-		const session = await TrainingSession.create({
+		session = await TrainingSession.create({
 			studentCid: req.body.studentCid,
 			instructorCid: res.user.cid,
 			startTime: req.body.startTime,
@@ -479,7 +484,7 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 			synced: false
 		});
 
-		const instructor = await User.findOne({cid: session.instructorCid}).select('fname lname').lean();
+		instructor = await User.findOne({cid: session.instructorCid}).select('fname lname').lean();
 
 		await Notification.create({
 			recipient: session.studentCid,
@@ -495,17 +500,18 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 	}
 
 	try {
-		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
-			instructor_id: instructor.cid,
-			session_date: req.body.startTime,
-			position: req.body.position,
-			duration: duration,
-			movements: req.body.movements,
-			score: req.body.progress,
-			notes: req.body.studentNotes,
-			location: req.body.location,
-			ots: req.body.ots
-		})
+		const formData = new FormData();
+		formData.append("instructor_id", res.user.cid);
+		formData.append("session_date", req.body.startTime);
+		formData.append("position", req.body.position);
+		formData.append("duration", duration);
+		formData.append("movements", req.body.movements);
+		formData.append("score", req.body.progress);
+		formData.append("notes", req.body.studentNotes);
+		formData.append("location", req.body.location);
+		formData.append("ots", req.body.ots);
+
+		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, formdata);
 
 		session.synced = true;
 		session.save();
