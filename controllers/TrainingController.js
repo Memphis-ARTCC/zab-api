@@ -455,9 +455,9 @@ router.put('/session/save/:id', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins'
 
 router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'mtr']), async (req, res) => {
 	try {
-		if(!req.body.studentCid || !req.body.instructorCid || !req.body.startTime || !req.body.endTime || !req.body.milestoneCode ||
-			req.body.position === '' || req.body.progress === null || req.body.movements === null || req.body.location === null ||
-			req.body.ots === null || req.body.studentNotes === null || (req.body.studentNotes && req.body.studentNotes.length > 3000) ||
+		if(!req.body.studentCid || !req.body.startTime || !req.body.endTime || !req.body.milestone || !req.body.insNotes ||
+			!req.body.position || !req.body.progress || !req.body.movements || !req.body.location ||
+			!req.body.ots || !req.body.studentNotes || (req.body.studentNotes && req.body.studentNotes.length > 3000) ||
 			(req.body.insNotes && req.body.insNotes.length > 3000)) {
 			throw {
 				code: 400,
@@ -476,7 +476,7 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 			instructorCid: res.user.cid,
 			startTime: req.body.startTime,
 			endTime: req.body.endTime,
-			milestoneCode: req.body.milestoneCode,
+			milestoneCode: req.body.milestone,
 			position: req.body.position,
 			progress: req.body.progress,
 			duration: duration,
