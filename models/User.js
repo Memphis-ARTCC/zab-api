@@ -64,13 +64,13 @@ userSchema.virtual('isSenior').get(function() {
 
 userSchema.virtual('isStaff').get(function() {
 	if(!this.roleCodes) return false;
-	const search = ['atm', 'datm', 'ta', 'ec', 'wm', 'fe'];
+	const search = ['atm', 'datm', 'ta', 'ata', 'ec', 'aec', 'wm', 'awm', 'fe', 'afe'];
 	return this.roleCodes.some(r => search.includes(r));
 });
 
 userSchema.virtual('isIns').get(function() {
 	if(!this.roleCodes) return false;
-	const search = ['atm', 'datm', 'ta', 'ins', 'mtr'];
+	const search = ['atm', 'datm', 'ta', 'ata', 'ins', 'mtr'];
 	return this.roleCodes.some(r => search.includes(r));
 });
 

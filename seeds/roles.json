@@ -18,10 +18,10 @@
         "class": "senior"
     },
     {
-        "name": "Events Coordinator",
-        "code": "ec",
+        "name": "Assistant Training Administrator",
+        "code": "ata",
         "order": 4,
-        "class": "junior"
+        "class": "junor"
     },
     {
         "name": "Webmaster",
@@ -30,21 +30,45 @@
         "class": "junior"
     },
     {
+        "name": "Assistant Webmaster",
+        "code": "awm",
+        "order": 6,
+        "class": "junior"
+    },
+    {
+        "name": "Events Coordinator",
+        "code": "ec",
+        "order": 7,
+        "class": "junior"
+    },
+    {
+        "name": "Assistant Events Coordinator",
+        "code": "aec",
+        "order": 8,
+        "class": "junior"
+    },
+    {
         "name": "Facilities Engineer",
         "code": "fe",
-        "order": 6,
+        "order": 9,
+        "class": "junior"
+    },
+    {
+        "name": "Assistant Facilities Engineer",
+        "code": "afe",
+        "order": 10,
         "class": "junior"
     },
     {
         "name": "Instructor",
         "code": "ins",
-        "order": 7,
+        "order": 11,
         "class": "training"
     },
     {
         "name": "Mentor",
         "code": "mtr",
-        "order": 8,
+        "order": 12,
         "class": "training"
     }
 ]

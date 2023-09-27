@@ -120,19 +120,39 @@ router.get('/staff', async (req, res) => {
 				code: "ta",
 				users: []
 			},
+			ata: {
+				title: "Assistant Training Administrator",
+				code: "ata",
+				users: []
+			},
 			ec: {
-				title: "Events Team",
+				title: "Events Coordinator",
 				code: "ec",
 				users: []
 			},
+			aec: {
+				title: "Assistant Events Coordinator",
+				code: "aec",
+				users: []
+			},
 			wm: {
-				title: "Web Team",
+				title: "Webmaster",
 				code: "wm",
+				users: []
+			},
+			awm: {
+				title: "Assistant Webmaster",
+				code: "awm",
 				users: []
 			},
 			fe: {
 				title: "Facility Engineer",
 				code: "fe",
+				users: []
+			},
+			afe: {
+				title: "Assistant Facility Engineer",
+				code: "afe",
 				users: []
 			},
 			ins: {
@@ -144,12 +164,7 @@ router.get('/staff', async (req, res) => {
 				title: "Mentors",
 				code: "instructors",
 				users: []
-			},
-			ata: {
-				title: "Assistant Training Administrator",
-				code: "ata",
-				users: []
-			},
+			}
 		};
 
 		users.forEach(user => user.roleCodes.forEach(role => staff[role].users.push(user)));
