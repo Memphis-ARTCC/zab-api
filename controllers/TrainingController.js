@@ -481,6 +481,20 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 
 		const instructor = await User.findOne({cid: session.instructorCid}).select('fname lname').lean();
 
+		await Notification.create({
+			recipient: session.studentCid,
+			read: false,
+			title: 'Training Notes Submitted',
+			content: `The training notes from your session with <b>${instructor.fname + ' ' + instructor.lname}</b> have been submitted.`,
+			link: `/dash/training/session/${session.id}`
+		});
+	}
+	catch (e) {
+		console.log(e);
+		res.stdRes.ret_det = e;
+	}
+
+	try {
 		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
 			instructor_id: instructor.cid,
 			session_date: req.body.startTime,
@@ -495,16 +509,9 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 
 		session.synced = true;
 		session.save();
-
-		await Notification.create({
-			recipient: session.studentCid,
-			read: false,
-			title: 'Training Notes Submitted',
-			content: `The training notes from your session with <b>${instructor.fname + ' ' + instructor.lname}</b> have been submitted.`,
-			link: `/dash/training/session/${session.id}`
-		});
 	}
 	catch (e) {
+		console.log(e);
 		res.stdRes.ret_det = e;
 	}
 	return res.json(res.stdRes);
