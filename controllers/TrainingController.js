@@ -481,17 +481,28 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 
 		const instructor = await User.findOne({cid: session.instructorCid}).select('fname lname').lean();
 
-		await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
-			instructor_id: instructor.cid,
-			session_date: req.body.startTime,
-			position: req.body.position,
-			duration: duration,
-			movements: req.body.movements,
-			score: req.body.progress,
-			notes: req.body.studentNotes,
-			location: req.body.location,
-			ots: req.body.ots
-		})
+		try {
+			let response = await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
+				instructor_id: instructor.cid,
+				session_date: req.body.startTime,
+				position: req.body.position,
+				duration: duration,
+				movements: req.body.movements,
+				score: req.body.progress,
+				notes: req.body.studentNotes,
+				location: req.body.location,
+				ots: req.body.ots
+			});
+			if(response.data.error) {
+				throw {
+					code: 400,
+					message: response.data.error
+				}
+			}
+		}
+		catch(e) {
+			console.log(e);
+		}
 
 		session.synced = true;
 		session.save();
