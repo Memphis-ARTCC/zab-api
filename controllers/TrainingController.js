@@ -482,7 +482,6 @@ router.post('/session/new', getUser, auth(['atm', 'datm', 'ta', 'ata', 'ins', 'm
 		const instructor = await User.findOne({cid: session.instructorCid}).select('fname lname cid').lean();
 
 		try {
-			console.log(request);
 			let response = await axios.post(`https://api.vatusa.net/v2/user/${req.body.studentCid}/training/record?apikey=${process.env.VATUSA_API_KEY}`, {
 				instructor_id: instructor.cid,
 				session_date: req.body.startTime,
