@@ -567,7 +567,7 @@ router.put('/visit/:cid', getUser, auth(['atm', 'datm']), async (req, res) => {
 		});
 	}
 	catch(e) {
-		
+		console.log(e);
 		res.stdRes.ret_det = e;
 	}
 	return res.json(res.stdRes);
